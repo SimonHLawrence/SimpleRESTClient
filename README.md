@@ -4,7 +4,7 @@ A simple client for making REST API calls using Swift's async/await feature.
 
 ## Usage
 
-First, define an **Environment** in which to make API calls.
+First, define an ``Environment`` in which to make API calls.
 
 ```swift
 enum MyEnvironment: Environment {
@@ -22,12 +22,13 @@ enum MyEnvironment: Environment {
 }
 ```
 
-Then define an **Endpoint** for the API calls you wish to make:
+Then define an ``Endpoint`` for the API calls you wish to make:
 
 ```swift
 enum MyEndpoint: Endpoint {
   case users(page: Int?)
   case user(id: Int?)
+  case login
 
   func url(environment: Environment) async throws -> URL {
 
@@ -54,6 +55,8 @@ enum MyEndpoint: Endpoint {
       } else {
         endpointURLComponents.path = "/api/users/"
       }
+    case .login:
+      endpointURLComponents.path = "/api/login"
     }
 
     guard let endpointURL = endpointURLComponents.url(relativeTo: baseURL) else {
@@ -65,8 +68,8 @@ enum MyEndpoint: Endpoint {
 }
 ```
 
-Next, create a **Transport**. For network operations, use **NetworkTransport**. 
-For test operations **MockTransport** provides the ability to create mocked responses 
+Next, create a ``Transport``. For network operations, use ``NetworkTransport``. 
+For test operations ``MockTransport`` provides the ability to create mocked responses 
 in code or from JSON files. 
 
 You can then inject this transport as a dependency to an API client:
@@ -76,7 +79,7 @@ var transport = NetworkTransport(environment: MyEnvironment.sandbox)
 var apiClient = APIClient(transport: transport)
 ```
 
-Then, we can implement our DTO entities and make calls with the **APIClient**.
+Then, we can implement our DTO entities and make calls with the ``APIClient``.
 
 ```swift
 struct NewUserRequest: Codable {
@@ -101,17 +104,25 @@ func createUser(name: String, job: String) async throws -> String {
 }
 ```
 
-And so on. We can extend the operation of the **Transport** by injecting ``RequestProcessor`` implementations,
+And so on. We can extend the operation of the ``Transport`` by injecting ``RequestProcessor`` implementations,
 for instance to add headers for authentication. These will be executed sequentially but each can operate
 asynchronously.
 
 ```swift
 struct AuthenticationRequestProcessor: RequestProcessor {
-  func process(_ request: URLRequest) async throws -> URLRequest {
-    // Perform whatever steps are needed to get an access token.
-    let accessToken = try await something() // ...
-    let bearer = "Bearer \(accessToken)"
-    request.updating(headerFields: [HTTPHeader.authorization: bearer])
+
+  func process(endpoint: Endpoint, request: URLRequest) async throws -> URLRequest {
+  
+    switch endpoint {
+      case MyEndpoint.login:
+        // Login endpoint is unauthenticated.
+        return request
+      default:
+        // Perform whatever steps are needed to get an access token.
+        let accessToken = try await something() // ...
+        let bearer = "Bearer \(accessToken)"
+        return request.updating(headerFields: [HTTPHeader.authorization: bearer])
+    }
   }
 }
 

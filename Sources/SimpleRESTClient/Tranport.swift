@@ -27,19 +27,20 @@ public protocol Endpoint {
 /// add headers for authentication.
 public protocol RequestProcessor {
   /// Process the supplied request, adding additional information.
+  /// - Parameter endpoint: the endpoint that is being called.
   /// - Parameter request: the initial request.
   /// - Returns: the processed request.
-  func process(_ request: URLRequest) async throws -> URLRequest
+  func process(endpoint: Endpoint, request: URLRequest) async throws -> URLRequest
 }
 
 extension [RequestProcessor]: RequestProcessor {
   /// Apply the specified ``RequestProcessor`` instances in order to generate a processed request.
   /// - Parameter request: the intial request.
   /// - Returns: the processed request.
-  public func process(_ request: URLRequest) async throws -> URLRequest {
+  public func process(endpoint: Endpoint, request: URLRequest) async throws -> URLRequest {
     var result = request
     for element in self {
-      result = try await element.process(result)
+      result = try await element.process(endpoint: endpoint, request: result)
     }
     return result
   }
@@ -104,7 +105,7 @@ public extension Transport {
     request.httpBody = data
     request.httpMethod = method
 
-    request = try await requestProcessors.process(request)
+    request = try await requestProcessors.process(endpoint: endpoint, request: request)
 
     return request
   }
