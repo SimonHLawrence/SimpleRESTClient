@@ -25,12 +25,9 @@ enum MyEnvironment: Environment {
 Then define an **Endpoint** for the API calls you wish to make:
 
 ```swift
-enum MyEndpoint {
+enum MyEndpoint: Endpoint {
   case users(page: Int?)
   case user(id: Int?)
-}
-
-extension MyEndpoint: Endpoint {
 
   func url(environment: Environment) async throws -> URL {
 
@@ -96,8 +93,9 @@ struct NewUserResponse: Codable {
 ```
 
 ```swift
+let endpoint = MyEndpoint.user(id: nil)
 let userRequest = NewUserRequest(name: "Noelene", job: "Lead Developer")
-let userResponse: NewUserResponse = try await apiClient.post(endpoint: ReqResEndpoint.user(id: nil), value: userRequest)
+let userResponse: NewUserResponse = try await apiClient.post(endpoint: endpoint, value: userRequest)
 print("Created user with id \(userResponse.id).")
 ```
 
