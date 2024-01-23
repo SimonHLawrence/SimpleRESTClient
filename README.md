@@ -109,7 +109,7 @@ asynchronously.
 struct AuthenticationRequestProcessor: RequestProcessor {
   func process(_ request: URLRequest) async throws -> URLRequest {
     // Perform whatever steps are needed to get an access token.
-    let accessToken = try await // ...
+    let accessToken = try await something() // ...
     let bearer = "Bearer \(accessToken)"
     request.updating(headerFields: [HTTPHeader.authorization: bearer])
   }
