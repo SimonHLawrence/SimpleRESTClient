@@ -116,5 +116,5 @@ struct AuthenticationRequestProcessor: RequestProcessor {
 }
 
 var transport = NetworkTransport(environment: MyEnvironment.sandbox, 
-                           requestProcessors: [AuthenticationRequestProcessor])
+                           requestProcessors: [AuthenticationRequestProcessor()])
 ```
