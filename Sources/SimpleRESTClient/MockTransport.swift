@@ -6,8 +6,8 @@
 //
 
 import Foundation
-@testable import SimpleRESTClient
 
+/// Mock API response for testing.
 public struct MockResponse {
   let statusCode: Int
   let body: Data
@@ -17,11 +17,11 @@ public struct MockResponse {
     self.body = body
   }
 
-  init?(statusCode: Int, filename: String) {
+  init?(statusCode: Int, filename: String, sourceFolder: URL) {
 
-    let thisFile = URL(fileURLWithPath: #file)
-    let thisDirectory = thisFile.deletingLastPathComponent()
-    let mockURL = thisDirectory.appendingPathComponent("Data/\(filename)").appendingPathExtension("json")
+    let mockURL = sourceFolder
+      .appendingPathComponent(filename)
+      .appendingPathExtension("json")
 
     guard
       let body = try? Data(contentsOf: mockURL) else {
@@ -33,6 +33,7 @@ public struct MockResponse {
   }
 }
 
+/// An expected API call and its associated response.
 public struct ExpectedRequest {
   let url: String
   let method: String
@@ -52,10 +53,13 @@ open class MockTransport: Transport {
     self.requestProcessors = requestProcessors
   }
 
+  /// Add an expected request and its associated response.
+  /// - Parameter expectedRequest: the expected request.
   open func expect(_ expectedRequest: ExpectedRequest) {
     expectedRequests.append(expectedRequest)
   }
 
+  /// True if all the expected requests have been received, false otherwise.
   open var allExpectedRequestsReceived: Bool {
     expectedRequests.isEmpty
   }

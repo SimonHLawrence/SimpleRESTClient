@@ -21,13 +21,20 @@ struct DeleteEndpoint: Endpoint {
 final class APIClientTests: XCTestCase {
 
   var environment = ReqResEnvironment()
-  lazy var bundle = Bundle(for: APIClientTests.self)
   lazy var transport = MockTransport(environment: environment)
   lazy var apiClient = APIClient(transport: transport)
+  lazy var sourceFolder = {
+    let thisFile = URL(fileURLWithPath: #file)
+    let thisDirectory = thisFile.deletingLastPathComponent()
+    return thisDirectory.appendingPathComponent("Data", isDirectory: true)
+  }()
 
-  func testExample() async throws {
+  func testDeleteWithResponse() async throws {
 
-    let deleteResponse = MockResponse(statusCode: 200, filename: "DeleteResponse")!
+    guard let deleteResponse = MockResponse(statusCode: 200, filename: "DeleteResponse", sourceFolder: sourceFolder) else {
+      XCTFail()
+      return
+    }
     let deleteRequest = ExpectedRequest(url: "https://www.google.com", method: "DELETE", response: deleteResponse)
     transport.expect(deleteRequest)
     let result: DeleteResponse = try await apiClient.delete(endpoint: DeleteEndpoint())
