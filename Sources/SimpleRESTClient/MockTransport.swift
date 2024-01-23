@@ -9,15 +9,15 @@ import Foundation
 
 /// Mock API response for testing.
 public struct MockResponse {
-  let statusCode: Int
-  let body: Data
+  public let statusCode: Int
+  public let body: Data
 
-  init(statusCode: Int, body: Data) {
+  public init(statusCode: Int, body: Data) {
     self.statusCode = statusCode
     self.body = body
   }
 
-  init?(statusCode: Int, filename: String, sourceFolder: URL) {
+  public init?(statusCode: Int, filename: String, sourceFolder: URL) {
 
     let mockURL = sourceFolder
       .appendingPathComponent(filename)
@@ -35,9 +35,15 @@ public struct MockResponse {
 
 /// An expected API call and its associated response.
 public struct ExpectedRequest {
-  let url: String
-  let method: String
-  let response: MockResponse
+  public let url: String
+  public let method: String
+  public let response: MockResponse
+
+  public init(url: String, method: String, response: MockResponse) {
+    self.url = url
+    self.method = method
+    self.response = response
+  }
 }
 
 /// Mock implementation of ``Transport`` for unit testing.
