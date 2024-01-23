@@ -49,14 +49,16 @@ public struct ExpectedRequest {
 /// Mock implementation of ``Transport`` for unit testing.
 open class MockTransport: Transport {
 
+  open var clearExpectationsOnSatisfy: Bool
   open var environment: Environment
   open var requestProcessors: [RequestProcessor]
   open var expectedRequests: [ExpectedRequest] = []
   open var receivedRequests: [URLRequest] = []
 
-  public init(environment: Environment, requestProcessors: [RequestProcessor] = []) {
+  public init(environment: Environment, requestProcessors: [RequestProcessor] = [], clearExpectationsOnSatisfy: Bool = true) {
     self.environment = environment
     self.requestProcessors = requestProcessors
+    self.clearExpectationsOnSatisfy = clearExpectationsOnSatisfy
   }
 
   /// Add an expected request and its associated response.
@@ -86,7 +88,9 @@ open class MockTransport: Transport {
       guard expectedStatusCodes.contains(response.statusCode) else {
         throw HTTPError(code: response.statusCode)
       }
-      expectedRequests.remove(at: index)
+      if clearExpectationsOnSatisfy {
+        expectedRequests.remove(at: index)
+      }
       return response.body
     }
     throw HTTPError(code: 400)
