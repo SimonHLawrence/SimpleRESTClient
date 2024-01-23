@@ -93,10 +93,28 @@ struct NewUserResponse: Codable {
 ```
 
 ```swift
-let endpoint = MyEndpoint.user(id: nil)
-let userRequest = NewUserRequest(name: "Noelene", job: "Lead Developer")
-let userResponse: NewUserResponse = try await apiClient.post(endpoint: endpoint, value: userRequest)
-print("Created user with id \(userResponse.id).")
+func createUser(name: String, job: String) async throws -> String {
+  let endpoint = MyEndpoint.user(id: nil)
+  let userRequest = NewUserRequest(name: name, job: job)
+  let userResponse: NewUserResponse = try await apiClient.post(endpoint: endpoint, value: userRequest)
+  return userResponse.id
+}
 ```
 
-And so on.
+And so on. We can extend the operation of the **Transport** by injecting ``RequestProcessor`` implementations,
+for instance to add headers for authentication. These will be executed sequentially but each can operate
+asynchronously.
+
+```swift
+struct AuthenticationRequestProcessor: RequestProcessor {
+  func process(_ request: URLRequest) async throws -> URLRequest {
+    // Perform whatever steps are needed to get an access token.
+    let accessToken = try await // ...
+    let bearer = "Bearer \(accessToken)"
+    request.updating(headerFields: [HTTPHeader.authorization: bearer])
+  }
+}
+
+var transport = NetworkTransport(environment: MyEnvironment.sandbox, 
+                           requestProcessors: [AuthenticationRequestProcessor])
+```
